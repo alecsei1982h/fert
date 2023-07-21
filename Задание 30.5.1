@@ -1,0 +1,80 @@
+import pytest
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+from settings import valid_email, valid_password
+from selenium import webdriver
+
+@pytest.fixture(autouse=True)
+def testing():
+    pytest.driver = webdriver.Chrome(C:projects/chromedriver.exe)
+
+
+     pytest.driver.quit()
+
+def test_show_all_pets():
+    '''Проверка карточек питомцев всех пользователей на
+     наличие фото, имени, и описания(породп и возраст)'''
+
+    # Установка неявного ожидания
+    pytest.driver.implicitly_wait(10)
+    # Ввод электронной почты
+    pytest.driver.find_element(By.ID, 'email').send_keys(valid_email)
+    #Ввод пароля
+    pytest.driver.find_element(By.ID, 'pass').send_keys(valid_password)
+    # Клик по кнопке "Войти"
+    pytest.driver.find_element(By.CSS_SELECTOR, 'button[type="submit"]').click()
+    #Проверка того что осуществлен переход на страницу пользователя
+    assert pytest.driver.current_url=='https://petfriends.skillfactory.ru/all_pets'
+
+    images = pytest.driver.find_elements_by_css_selector('.card-deck .card-img-top')
+    names = pytest.driver.find_elements_by_css_selector('.card-deck .card-title')
+    descriptions = pytest.driver.find_elements_by_css_selector('.card-deck .card-text')
+
+    assert  names[0].text !=''
+
+    for i in range(len(names)):
+        assert images[i].get_attribute('src') != ''
+        assert names[i].text != ''
+        assert descriptions[i].text != ''
+        assert ', ' in descriptions[i]
+        parts = descriptions[i].text.split(", ")
+        assert len(parts[0]) > 0
+        assert len(parts[1]) > 0
+
+
+
+
+
+def test_no_duplicate_pets(go_to_my_pets):
+    '''Проверка того, что на страгице со спиоском питомцев пользователя нет
+    повторящихся питомцев'''
+    #Установка явного ожидания
+    element = WebDriverWait(pytest.driver, 10).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, 'table.table-hover tbody tr')))
+    #Сохранение элиментов с данными о питомцах в переменную "pet_data"
+    pet_data = pytest.driver.find_element(By.CSS_SELECTOR, 'table.table-hover tbody tr')
+    #Перебираются данные из переменной "pet_data"
+    #Сохраняются имя, возраст, порода, остальное меняется на пустую строку
+    list_data = []
+    for i in range(len(pet_data)):
+        data_pet = pet_data[i].text.replace('\n', '').replace('x', '')
+        split_data_pet = data_pet_split('')
+        list_data.append(split_data_pet)
+        #Склееватся имя, возраст, порода
+        #Получившееся скленные слова добавляются в строку и между ними вставляется пробел
+        line = ''
+        for i in list_data:
+            line += ''.join(i)
+            line += ''
+            #Получение списка из строки "line"
+            list_line = line.split('')
+            #Превращение списка в множество
+            set_list_line = set(list_line)
+            #Нахождение количества элиментов списка и множества
+            a = len(list_line)
+            b = len(set_list_line)
+            #Из количества элиментов списка вычитается количество элиментов множества
+            result = a - b
+
+
